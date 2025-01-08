@@ -16,9 +16,10 @@ public class Principal {
     private Scanner teclado = new Scanner(System.in);
     private ConsumoAPI consumoApi = new ConsumoAPI();
     private ConvierteDatos conversor = new ConvierteDatos();
-    private List<DatosLibro> datosLibros = new ArrayList<>();
-    private List<Libro> libros;
     private String mensajeOpcionInvalida = "Opción incorrecta. Intente nuevamente.";
+    private List<Libro> libros;
+    private List<Autor> autores;
+
 
     @Autowired
     private LibroRepository libroRepository;
@@ -57,9 +58,9 @@ public class Principal {
                 case 2:
                     listarLibrosRegistrados();
                     break;
-////                case 3:
-////                    listarAutoresRegistrados();
-////                    break;
+                case 3:
+                    listarAutoresRegistrados();
+                    break;
 ////                case 4:
 ////                    listarAutoresVivosPorAño();
 ////                    break;
@@ -110,7 +111,7 @@ public class Principal {
                 Optional<Libro> libroExistente = libroRepository.findByTituloContainingIgnoreCase(datosLibro.titulo());
                 if (libroExistente.isPresent()) {
                     System.out.println("El libro ya está registrado.");
-                    return; // Salir del metodo si el libro ya existe
+                    return;
                 }
                 libroRepository.save(libro);
                 System.out.println(datosLibro);
@@ -123,9 +124,10 @@ public class Principal {
     }
 
     private void listarLibrosRegistrados(){
+        System.out.println("---Lista de libros registrados---");
         libros =libroRepository.findAll();
         if (libros.isEmpty()){
-            System.out.println("Aún no hay libros en la base de datos");
+            System.out.println("Aún no hay libros registrados en la base de datos");
         } else {
             libros.stream()
                     .sorted(Comparator.comparing(Libro::getTitulo))
@@ -133,6 +135,22 @@ public class Principal {
         }
 
     }
+
+    private void listarAutoresRegistrados(){
+        System.out.println("---Lista de autores registrados---");
+        autores = autorRepository.findAll();
+        if (autores.isEmpty()){
+            System.out.println("Aún no hay autores registrados en la base de datos");
+        } else {
+            for (int i = 0; i < autores.size(); i++){
+                List<Libro> librosPorAutor = libroRepository.findLibrosByAutorId(autores.get(i).getId());
+                System.out.println("\n" + autores.get(i).toString());
+                System.out.println("Libros registrados: ");
+                librosPorAutor.forEach(l -> System.out.println("- " + l.getTitulo()));
+            }
+        }
+    }
+
 
 
 

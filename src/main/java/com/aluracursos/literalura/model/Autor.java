@@ -84,7 +84,6 @@ public class Autor {
         return  "-----------------------------------" + '\n' +
                 "Nombre: " + nombre + '\n' +
                 "Año de nacimiento: " + (fechaNacimiento != null ? fechaNacimiento : "Desconocida") + '\n' +
-                "Año de fallecimiento: " + (fechaFallecimiento!= null ? fechaFallecimiento : "Desconocida") + '\n' +
-                "-----------------------------------";
+                "Año de fallecimiento: " + (fechaFallecimiento!= null ? fechaFallecimiento : "Desconocida");
     }
 }

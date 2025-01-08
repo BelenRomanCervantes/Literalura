@@ -86,8 +86,7 @@ public class Libro {
                 "Título: " + titulo + '\n' +
                 "Autor: " + (autor!= null ? autor.getNombre() : "Desconocido") + '\n' +
                 "Idioma: " + (idioma == null ? "Desconocido" : idioma) + '\n' +
-                "Número de descargas: " + (numeroDescargas != null ? numeroDescargas : 0)+ '\n' +
-                "-----------------------------------";
+                "Número de descargas: " + (numeroDescargas != null ? numeroDescargas : 0)+ '\n';
     }
 
 }
