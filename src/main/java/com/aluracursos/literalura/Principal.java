@@ -1,34 +1,41 @@
 package com.aluracursos.literalura;
 
-import com.aluracursos.literalura.model.Datos;
-import com.aluracursos.literalura.model.DatosLibro;
-import com.aluracursos.literalura.model.Libro;
+import com.aluracursos.literalura.model.*;
+import com.aluracursos.literalura.repository.AutorRepository;
 import com.aluracursos.literalura.repository.LibroRepository;
 import com.aluracursos.literalura.service.ConsumoAPI;
 import com.aluracursos.literalura.service.ConvierteDatos;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
+@Component
 public class Principal {
 
     private Scanner teclado = new Scanner(System.in);
     private ConsumoAPI consumoApi = new ConsumoAPI();
-    private final String URL_BASE = "https://gutendex.com/books/";
     private ConvierteDatos conversor = new ConvierteDatos();
-    private LibroRepository repositorio;
     private List<DatosLibro> datosLibros = new ArrayList<>();
     private List<Libro> libros;
+    private String mensajeOpcionInvalida = "Opción incorrecta. Intente nuevamente.";
 
-    public Principal(LibroRepository repository){
-        this.repositorio = repository;
+    @Autowired
+    private LibroRepository libroRepository;
+
+    @Autowired
+    private AutorRepository autorRepository;
+
+    public Principal(LibroRepository libroRepository, AutorRepository autorRepository){
+        this.libroRepository = libroRepository;
+        this.autorRepository = autorRepository;
     }
 
     public void muestraElMenu() {
         var opcion = -1;
         while (opcion != 0) {
             var menu = """
-                    ------------------
+                    ---------------MENÚ----------------
                     Escriba el número de la opción que desea ejecutar:
                     1 - Buscar libro por título
                     2 - Listar todos los libros registrados
@@ -37,7 +44,7 @@ public class Principal {
                     5 - Listar libros por idioma
 
                     0 - Salir
-                    ------------------
+                    ------------------------------------
                     """;
             System.out.println(menu);
             opcion = teclado.nextInt();
@@ -63,48 +70,60 @@ public class Principal {
                     System.out.println("Cerrando la aplicación...");
                     break;
                 default:
-                    System.out.println("Opción inválida");
+                    System.out.println(mensajeOpcionInvalida);
             }
         }
     }
 
-
-    private Datos obtenerDatosLibro() {
-        System.out.println("Escribe el nombre del libro que deseas buscar");
-        var tituloBuscado = teclado.nextLine().toLowerCase();
-        var json = consumoApi.obtenerDatos(URL_BASE + "?search=" + tituloBuscado.replace(" ", "+"));
-        var datos = conversor.obtenerDatos(json, Datos.class);
-        return datos;
-    }
-
-    private Libro buscarLibroPorTitulo() {
-        System.out.println("Escribe el nombre del libro que deseas buscar");
+    public DatosLibro getDatosLibro() {
+        System.out.println("Escribe el título del libro que buscas: ");
         var tituloBuscado = teclado.nextLine();
-        var json = consumoApi.obtenerDatos(URL_BASE + "?search=" + tituloBuscado.replace(" ", "+"));
-        var datosBusqueda = conversor.obtenerDatos(json, Datos.class);
-        Optional<DatosLibro> libroBuscado = datosBusqueda.resultados().stream()
-                .filter(l -> l.titulo().toLowerCase().contains(tituloBuscado.toLowerCase()))
-                .findFirst();
-        if(libroBuscado.isPresent()){
-            System.out.println("Libro encontrado");
-            var libroEncontrado = libroBuscado.get();
-            Libro libroNuevo = new Libro(libroEncontrado);
-            System.out.println(libroNuevo);
-            return libroNuevo;
-        } else {
-            System.out.println("Libro no encontrado");
-            return null;
+        try {
+            var json = consumoApi.obtenerDatos(tituloBuscado.replace(" ", "+"));
+            var datos = conversor.obtenerDatos(json, DatosLibro.class);
+            return datos;
+        } catch (Exception e) {
+            System.out.println(mensajeOpcionInvalida);
         }
+        return null;
     }
 
     private void guardarLibro() {
-        Libro libro = buscarLibroPorTitulo();
+        DatosLibro datosLibro = getDatosLibro();
+        if (datosLibro != null) {
+        Optional<Autor> nombreAutor = autorRepository.findByNombre(datosLibro.autor().get(0).nombre());
 
-        repositorio.save(libro);
+            Libro libro = new Libro();
+            libro.setTitulo(datosLibro.titulo());
+            libro.setIdioma(Idioma.fromString(datosLibro.idioma().get(0)));
+            libro.setNumeroDescargas(datosLibro.numeroDescargas());
+
+            if (nombreAutor.isPresent()) {
+                Autor autorExistente = nombreAutor.get();
+                libro.setAutor(autorExistente);
+            } else {
+                Autor nuevoAutor = new Autor(datosLibro.autor().get(0));
+                nuevoAutor = autorRepository.save(nuevoAutor);
+                libro.setAutor(nuevoAutor);
+            }
+            try {
+                Optional<Libro> libroExistente = libroRepository.findByTituloContainingIgnoreCase(datosLibro.titulo());
+                if (libroExistente.isPresent()) {
+                    System.out.println("El libro ya está registrado.");
+                    return; // Salir del metodo si el libro ya existe
+                }
+                libroRepository.save(libro);
+                System.out.println(datosLibro);
+            } catch (Exception e) {
+                System.out.println("Libro registrado anteriormente");
+            }
+        } else {
+            System.out.println(mensajeOpcionInvalida);
+        }
     }
 
     private void listarLibrosRegistrados(){
-        libros =repositorio.findAll();
+        libros =libroRepository.findAll();
         if (libros.isEmpty()){
             System.out.println("Aún no hay libros en la base de datos");
         } else {

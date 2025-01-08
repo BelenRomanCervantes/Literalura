@@ -1,38 +1,43 @@
 package com.aluracursos.literalura.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "libros")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Libro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Id;
     @Column (unique = true)
     private String titulo;
-    private String idioma;
+
+    @Enumerated(EnumType.STRING)
+    private Idioma idioma;
+
     private Double numeroDescargas;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "autor_id")
     private Autor autor;
 
-    public Libro() {
-    }
-
-    public Libro(DatosLibro libro) {
-        this.titulo = libro.titulo();
-        if (libro.autor() != null && !libro.autor().isEmpty()){
-            this.autor = new Autor(libro.autor().get(0));
-        } else {
-            this.autor = null;
-        }
-        this.idioma = validacionIdioma(libro.idioma());
-        this.numeroDescargas = OptionalDouble.of(Double.valueOf(libro.numeroDescargas())).orElse(0);
+    public Libro(DatosLibro datosLibro) {
+        this.titulo = datosLibro.titulo();
+        this.autor = new Autor(datosLibro.autor().get(0));
+        this.idioma = Idioma.fromString(datosLibro.idioma().get(0));
+        this.numeroDescargas = datosLibro.numeroDescargas();
     }
 
     public Long getId() {
@@ -51,12 +56,12 @@ public class Libro {
         this.titulo = titulo;
     }
 
-    public String getIdiomas() {
+    public Idioma getIdioma() {
         return idioma;
     }
 
-    public void setIdiomas(String idiomas) {
-        this.idioma = idiomas;
+    public void setIdioma(Idioma idioma) {
+        this.idioma = idioma;
     }
 
     public Double getNumeroDescargas() {
@@ -77,19 +82,12 @@ public class Libro {
 
     @Override
     public String toString() {
-        return
-                "titulo='" + titulo + '\'' +
-                ", autor='" + autor + '\'' +
-                ", idioma='" + idioma + '\'' +
-                ", numeroDescargas=" + numeroDescargas;
+        return "-----------------------------------" + '\n' +
+                "Título: " + titulo + '\n' +
+                "Autor: " + (autor!= null ? autor.getNombre() : "Desconocido") + '\n' +
+                "Idioma: " + (idioma == null ? "Desconocido" : idioma) + '\n' +
+                "Número de descargas: " + (numeroDescargas != null ? numeroDescargas : 0)+ '\n' +
+                "-----------------------------------";
     }
 
-
-    private String validacionIdioma(List<String> idioma){
-        if (idioma.isEmpty() || idioma == null){
-            return  "Desconocido";
-        } else {
-            return idioma.get(0);
-        }
-    }
 }

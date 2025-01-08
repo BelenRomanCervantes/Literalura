@@ -13,4 +13,12 @@ public record DatosLibro(
         @JsonAlias("download_count") Double numeroDescargas
 ) {
 
+    @Override
+    public String toString() {
+        return "Libro: " + '\n' +
+                "titulo='" + titulo + '\n' +
+                "autor=" + autor + '\n' +
+                "idioma=" + idioma + '\n' +
+                "numeroDescargas=" + numeroDescargas;
+    }
 }
