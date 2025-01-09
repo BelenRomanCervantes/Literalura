@@ -43,6 +43,7 @@ public class Principal {
                     3 - Listar autores registrados
                     4 - Listar autores vivos en un determinado año
                     5 - Listar libros por idioma
+                    6 - Top 10 de los libros más descargados
 
                     0 - Salir
                     ------------------------------------
@@ -66,6 +67,9 @@ public class Principal {
                     break;
                 case 5:
                     listarLibrosPorIdioma();
+                    break;
+                case 6:
+                    topLibrosMasDescargados();
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -114,7 +118,8 @@ public class Principal {
                     return;
                 }
                 libroRepository.save(libro);
-                System.out.println(datosLibro);
+                System.out.println("Libro registrado exitosamente");
+                System.out.println(libro);
             } catch (Exception e) {
                 System.out.println("Libro registrado anteriormente");
             }
@@ -175,11 +180,12 @@ public class Principal {
         );
         System.out.println("Ingrese el idioma que desea buscar");
         var idiomaBuscado = teclado.nextLine();
+
         try {
 
             List<Libro> librosPorIdioma = libroRepository.findByIdioma(Idioma.fromString(idiomaBuscado));
             if (!librosPorIdioma.isEmpty()) {
-                System.out.println("---Libros registrados publicados en " + Idioma.fromString(idiomaBuscado).toString() + "---");
+                System.out.println("---Libros registrados publicados en " + Idioma.fromString(idiomaBuscado) + "---");
                 librosPorIdioma.forEach(l -> System.out.println("\n" + l.toString()));
             } else {
                 System.out.println("No se han encontrado libros en ese idioma.");
@@ -187,6 +193,12 @@ public class Principal {
         } catch (Exception e) {
             System.out.println(mensajeOpcionInvalida);
         }
+    }
+
+    private void topLibrosMasDescargados(){
+        System.out.println("---Top 10 de los libros más descargados---");
+        List<Libro> top10 = libroRepository.findTop10();
+        top10.forEach(l -> System.out.println(l.toString()));
     }
 
 

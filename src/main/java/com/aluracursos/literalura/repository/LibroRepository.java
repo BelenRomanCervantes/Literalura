@@ -19,4 +19,7 @@ public interface LibroRepository extends JpaRepository<Libro, Long> {
     List<Libro> findLibrosByAutorId(@Param("autorId") Long autorId);
 
     List<Libro> findByIdioma(Idioma idioma);
+
+    @Query("SELECT l FROM Libro l ORDER BY numeroDescargas DESC LIMIT 10")
+    List<Libro> findTop10();
 }
