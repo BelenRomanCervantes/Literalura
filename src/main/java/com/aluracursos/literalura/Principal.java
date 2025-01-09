@@ -16,7 +16,7 @@ public class Principal {
     private Scanner teclado = new Scanner(System.in);
     private ConsumoAPI consumoApi = new ConsumoAPI();
     private ConvierteDatos conversor = new ConvierteDatos();
-    private String mensajeOpcionInvalida = "Opción incorrecta. Intente nuevamente.";
+    private String mensajeOpcionInvalida = "Opción inválida. Intente nuevamente.";
     private List<Libro> libros;
     private List<Autor> autores;
 
@@ -64,9 +64,9 @@ public class Principal {
                 case 4:
                     listarAutoresVivosPorAnio();
                     break;
-////                case 5:
-////                    listarLibrosPorIdioma();
-//                    break;
+                case 5:
+                    listarLibrosPorIdioma();
+                    break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
                     break;
@@ -159,7 +159,35 @@ public class Principal {
         autoresVivos.forEach(a -> System.out.println("\n" + a.toString()));
     }
 
+    private void listarLibrosPorIdioma() {
+        System.out.println(
+                """
+                        --------------------
+                        Idiomas disponibles:
+                        es - Español
+                        en - Inglés
+                        pt - Portugués
+                        fr - Francés
+                        it - Italiano
+                        de - Alemán
+                        ---------------------
+                        """
+        );
+        System.out.println("Ingrese el idioma que desea buscar");
+        var idiomaBuscado = teclado.nextLine();
+        try {
 
+            List<Libro> librosPorIdioma = libroRepository.findByIdioma(Idioma.fromString(idiomaBuscado));
+            if (!librosPorIdioma.isEmpty()) {
+                System.out.println("---Libros registrados publicados en " + Idioma.fromString(idiomaBuscado).toString() + "---");
+                librosPorIdioma.forEach(l -> System.out.println("\n" + l.toString()));
+            } else {
+                System.out.println("No se han encontrado libros en ese idioma.");
+            }
+        } catch (Exception e) {
+            System.out.println(mensajeOpcionInvalida);
+        }
+    }
 
 
 }
