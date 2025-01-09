@@ -61,9 +61,9 @@ public class Principal {
                 case 3:
                     listarAutoresRegistrados();
                     break;
-////                case 4:
-////                    listarAutoresVivosPorAño();
-////                    break;
+                case 4:
+                    listarAutoresVivosPorAnio();
+                    break;
 ////                case 5:
 ////                    listarLibrosPorIdioma();
 //                    break;
@@ -149,6 +149,14 @@ public class Principal {
                 librosPorAutor.forEach(l -> System.out.println("- " + l.getTitulo()));
             }
         }
+    }
+
+    private void listarAutoresVivosPorAnio(){
+        System.out.println("Ingrese un año para buscar a los autores que seguían con vida");
+        var anio = teclado.nextInt();
+        List<Autor> autoresVivos = autorRepository.buscarAutoresPorAnio(anio);
+        System.out.println("---Autores registrados vivos en " + anio + "---");
+        autoresVivos.forEach(a -> System.out.println("\n" + a.toString()));
     }
 
 
